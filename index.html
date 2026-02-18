@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aesthetica Pro | Typography Art Studio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@400;700&family=Plus+Jakarta+Sans:wght@200;800&family=Playfair+Display:wght@900&family=Space+Mono&family=Unbounded:wght@900&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        :root {
+            --accent: #00f2ff;
+            --bg: #030305;
+            --sidebar: rgba(10, 10, 15, 0.95);
+            --border: rgba(255, 255, 255, 0.08);
+            --glass: rgba(255, 255, 255, 0.03);
+        }
+
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background-color: var(--bg);
+            background-image: radial-gradient(circle at 100% 0%, rgba(0, 242, 255, 0.05) 0%, transparent 50%);
+            color: #ffffff;
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* --- Sidebar Navigation --- */
+        .sidebar {
+            width: 380px;
+            background: var(--sidebar);
+            border-right: 1px solid var(--border);
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            overflow-y: auto;
+            backdrop-filter: blur(20px);
+            z-index: 10;
+        }
+
+        .logo {
+            margin-bottom: 20px;
+        }
+
+        .logo h1 {
+            font-family: 'Syncopate', sans-serif;
+            font-size: 1.1rem;
+            letter-spacing: 6px;
+            background: linear-gradient(90deg, #fff, var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 0;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        label {
+            font-size: 0.65rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: rgba(255,255,255,0.4);
+        }
+
+        .input-field {
+            background: var(--glass);
+            border: 1px solid var(--border);
+            padding: 14px;
+            border-radius: 12px;
+            color: #fff;
+            outline: none;
+            transition: 0.3s;
+            font-family: inherit;
+        }
+
+        .input-field:focus {
+            border-color: var(--accent);
+            background: rgba(255,255,255,0.08);
+        }
+
+        select.input-field {
+            cursor: pointer;
+            appearance: none;
+            color: rgb(20, 187, 217);
+            font-size: 15px;
+        }
+
+        /* --- Canvas Workspace --- */
+        .workspace {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            position: relative;
+           background: #1a1a1a;
+        }
+
+        .canvas-wrapper {
+            position: relative;
+            max-width: 100%;
+            max-height: 85vh;
+            box-shadow: 0 50px 100px rgba(0,0,0,0.8);
+            border-radius: 10px;
+            overflow: hidden;
+            display: none;
+        }
+
+        canvas {
+            display: block;
+            max-width: 100%;
+            height: auto;
+        }
+
+        .empty-state {
+            text-align: center;
+            max-width: 300px;
+            opacity: 0.3;
+        }
+
+        /* --- Buttons --- */
+        .primary-btn {
+            background: #fff;
+            color: #000;
+            padding: 16px;
+            border-radius: 12px;
+            font-weight: 800;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.3s;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+        }
+
+        .primary-btn:hover {
+            background: var(--accent);
+            box-shadow: 0 10px 30px rgba(0, 242, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .action-grid {
+            display: none;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: auto;
+        }
+
+        .secondary-btn {
+            padding: 14px;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: #fff;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+        }
+
+        .secondary-btn:hover {
+            background: rgba(255,255,255,0.05);
+        }
+
+       
+
+    /* Styling the dropdown list itself */
+    select.input-field option {
+        background-color: #121217; /* Matches the sidebar */
+        color: #fff;
+        padding: 10px;
+    }
+
+    /* --- Background Color Picker --- */
+    .color-picker-container {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        background: var(--glass);
+        padding: 10px;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+    }
+
+    input[type="color"] {
+        -webkit-appearance: none;
+        border: none;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        cursor: pointer;
+        background: none;
+    }
+    
+    input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+    input[type="color"]::-webkit-color-swatch {
+        border: 2px solid rgba(255,255,255,0.2);
+        border-radius: 50%;
+    }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="logo">
+            <h1>AESTHETICA PRO</h1>
+        </div>
+
+        <div class="control-group">
+            <label>Artphrase</label>
+            <input type="text" id="artText" class="input-field" value="VISIONARY">
+        </div>
+
+        <div class="control-group">
+            <label>Typography Style</label>
+            <select id="fontStyle" class="input-field">
+                <option value="'Plus Jakarta Sans'">Modern Sans (Clean)</option>
+                <option value="'Unbounded'">Brutalist (Ultra-Bold)</option>
+                <option value="'Playfair Display'">Elegant Serif (Classic)</option>
+                <option value="'Space Mono'">Monospace (Tech)</option>
+                <option value="'Syncopate'">Minimalist (Wide)</option>
+            </select>
+        </div>
+
+        <div class="control-group">
+            <label>Resolution Detail</label>
+            <input type="range" id="density" min="4" max="12" value="6">
+        </div>
+
+        <div class="control-group">
+            <label>Color Engine</label>
+            <select id="colorEngine" class="input-field">
+                <option value="bw">B&W Monochrome</option>
+                <option value="source">Source Colors</option>
+                <option value="electric">Electric Cyan</option>
+            </select>
+        </div>
+
+        <div class="control-group">
+            <label>Portrait Input</label>
+            <label for="fileInput" class="primary-btn">Select Image</label>
+            <input type="file" id="fileInput" accept="image/*" style="display:none;">
+        </div>
+
+        <div class="action-grid" id="actionGrid">
+            <button onclick="exportPNG()" class="secondary-btn">Save PNG</button>
+            <button onclick="exportPDF()" class="primary-btn" style="padding:14px; background: var(--accent);">Export PDF</button>
+        </div>
+    </aside>
+
+    <main class="workspace">
+        <div class="empty-state" id="placeholder">
+            <p>Ready for processing.<br>Upload a photo to begin.</p>
+        </div>
+        <div class="canvas-wrapper" id="canvasWrapper">
+            <canvas id="mainCanvas"></canvas>
+        </div>
+    </main>
+
+<script>
+    const canvas = document.getElementById("mainCanvas");
+    const ctx = canvas.getContext("2d");
+    let activeImg = null;
+
+    // Drawing Logic
+    function render() {
+        if (!activeImg) return;
+
+        const density = parseInt(document.getElementById("density").value);
+        const font = document.getElementById("fontStyle").value;
+        const color = document.getElementById("colorEngine").value;
+        const text = document.getElementById("artText").value.toUpperCase().replace(/\s/g, "") || "A";
+
+        const scale = Math.min(1200 / activeImg.width, 1);
+        canvas.width = activeImg.width * scale;
+        canvas.height = activeImg.height * scale;
+
+        // Get pixels
+        ctx.drawImage(activeImg, 0, 0, canvas.width, canvas.height);
+        const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        
+        // Clear to Black
+        ctx.fillStyle = "#000";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        let charIdx = 0;
+
+        for (let y = 0; y < canvas.height; y += density) {
+            for (let x = 0; x < canvas.width; x += density) {
+                const i = (y * canvas.width + x) * 4;
+                const r = imgData.data[i];
+                const g = imgData.data[i+1];
+                const b = imgData.data[i+2];
+                const brightness = (r * 0.299 + g * 0.587 + b * 0.114);
+
+                if (brightness > 25) {
+                    const size = (brightness / 255) * (density * 2.1);
+                    ctx.font = `900 ${size}px ${font}`;
+                    
+                    if (color === 'bw') {
+                        ctx.fillStyle = `rgb(${brightness},${brightness},${brightness})`;
+                    } else if (color === 'electric') {
+                        ctx.fillStyle = `rgb(0, ${brightness}, ${brightness})`;
+                    } else {
+                        ctx.fillStyle = `rgb(${r},${g},${b})`;
+                    }
+
+                    ctx.fillText(text[charIdx % text.length], x, y);
+                    charIdx++;
+                }
+            }
+        }
+    }
+
+    // Input Listeners
+    document.getElementById("fileInput").onchange = (e) => {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            activeImg = new Image();
+            activeImg.onload = () => {
+                document.getElementById("placeholder").style.display = "none";
+                document.getElementById("canvasWrapper").style.display = "block";
+                document.getElementById("actionGrid").style.display = "grid";
+                render();
+            };
+            activeImg.src = event.target.result;
+        };
+        reader.readAsDataURL(e.target.files[0]);
+    };
+
+    ["artText", "fontStyle", "density", "colorEngine"].forEach(id => {
+        document.getElementById(id).oninput = render;
+    });
+
+    // Export Functions
+    function exportPNG() {
+        const link = document.createElement('a');
+        link.download = 'Aesthetica_Art.png';
+        link.href = canvas.toDataURL();
+        link.click();
+    }
+
+    function exportPDF() {
+        const { jsPDF } = window.jspdf;
+        const imgData = canvas.toDataURL("image/jpeg", 1.0);
+        const pdf = new jsPDF({
+            orientation: canvas.width > canvas.height ? "l" : "p",
+            unit: "px",
+            format: [canvas.width, canvas.height]
+        });
+        pdf.addImage(imgData, 'JPEG', 0, 0, canvas.width, canvas.height);
+        pdf.save("Masterpiece.pdf");
+    }
+</script>
+</body>
+</html>
